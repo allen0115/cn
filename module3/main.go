@@ -5,25 +5,30 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 )
 
 const PNameVersion = "VERSION"
 
 func main() {
+	//注册系统SIGTERM信号HOOK
+	handleSigterm()
 	//注册路由处理器
-        log.Printf("main---------start to handler http request")
+	log.Printf("main---------start to handler http request")
 	http.HandleFunc("/", reqHandler)
-        log.Printf("111")
+	log.Printf("111")
 	http.HandleFunc("/healthz", health)
-        log.Printf("222")
+	log.Printf("222")
 	//监听80端口,使用GO内置的HTTP Server
 	err := http.ListenAndServe(":80", nil)
-        log.Printf("333")
+	log.Printf("333")
 	if err != nil {
 		log.Printf("startup http server failed, %v", err)
 	}
-        log.Printf("end main ---------start to handler http request")
+	log.Printf("end main ---------start to handler http request")
 
 }
 
@@ -68,6 +73,28 @@ func health(w http.ResponseWriter, r *http.Request) {
 	log.Printf("handle request: /healthz, and response 200_OK")
 	reqHandler(w, r)
 	w.WriteHeader(http.StatusOK)
-        w.Header().Set("Custom-Header", "Awesome")
+	w.Header().Set("Custom-Header", "Awesome")
 	io.WriteString(w, "200")
 }
+
+//5.处理SIGTERM信号
+func handleSigterm() {
+	log.Printf("register sigterm signal handler")
+	signalChannel := make(chan os.Signal, 2)
+	signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		sig := <-signalChannel
+		switch sig {
+		case os.Interrupt:
+			//handle SIGINT
+		case syscall.SIGTERM:
+			//handle SIGTERM
+			time.Sleep(2 * time.Second)
+			log.Printf("handle system sigterm signal for 2 seconds")
+			//system exit normally
+			os.Exit(0)
+
+		}
+	}()
+}
+

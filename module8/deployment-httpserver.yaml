@@ -32,7 +32,7 @@ spec:
                              name: game-demo
                              key: ui_properties_file_name
           name: httpserver
-          image: docker.io/njq0506/httpserver:v1.0.4
+          image: docker.io/njq0506/httpserver:v1.0.5
           ports:
             - containerPort: 8082
           readinessProbe:
