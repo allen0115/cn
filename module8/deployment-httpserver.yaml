@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ben-httpserver
+  labels:
+    app: ben-httpserver
+spec:
+  replicas: 2 
+  selector:
+    matchLabels:
+      app: ben-httpserver
+  template:
+    metadata:
+      labels:
+        app: ben-httpserver
+    spec:
+      containers:
+        - env:
+           - name: httpport
+             valueFrom:
+               configMapKeyRef:
+                 key: httpport
+                 name: log-level-env
+           - name: PLAYER_INITIAL_LIVES
+             valueFrom:
+                     configMapKeyRef:
+                             name: game-demo
+                             key: player_initial_lives
+           - name: UI_PROPERTIES_FILE_NAME
+             valueFrom:
+                     configMapKeyRef:
+                             name: game-demo
+                             key: ui_properties_file_name
+          name: httpserver
+          image: docker.io/njq0506/httpserver:v1.0.4
+          ports:
+            - containerPort: 8082
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+              httpHeaders:
+                - name: Custom-Header
+                  value: Awesome 
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 500m
+              memory: 500Mi

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ben-httpserver
+  labels:
+    app: ben-httpserver
+spec:
+  selector:
+    app: ben-httpserver
+  ports:
+    - name: ben-httpserver
+      port: 8082
+      targetPort: 80
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 443
+      protocol: TCP
+  externalIPs:
+    - 172.21.0.9
